@@ -45,7 +45,6 @@ class Blockchain{
 						newBlock.previousBlockHash = JSON.parse(value).hash;
 						newBlock.hash = SHA256(JSON.stringify(newBlock)).toString();
 						db.put(newBlock.height, JSON.stringify(newBlock).toString());
-						console.log('star registered...');
 						resolve(JSON.stringify(newBlock));
 
 					});
@@ -60,11 +59,9 @@ class Blockchain{
 			});
 		});
 
-
 	} //addBlock(newBlock){
 
 	getBlock(height){
-
 		return new Promise((resolve, reject) => {
 			db.get(height, function(err, value){
 				if(err) reject('Block not found', err);
@@ -144,7 +141,6 @@ class Blockchain{
 					output.push(JSON.parse(data));
 				})
 				.on('end', function(data){
-					// console.log(output);
 					resolve(output);
 				});	
 		});
@@ -153,8 +149,6 @@ class Blockchain{
 
 	getBlocksByParam(request){
 		return new Promise((resolve, reject) =>{
-
-			// resolve(request[Object.keys(request)[0]]);
 			let param = Object.keys(request)[0];
 			console.log(param);
 			let output = [];

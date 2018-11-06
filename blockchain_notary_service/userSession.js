@@ -33,8 +33,6 @@ function validateSignature(message){
 			let newValue = {};
 			if (!(value == false)){
 				let msg = value.message;
-				console.log("verifying user....")
-				console.log(msg);
 				if(bitcoinMessage.verify(msg, message.address, message.signature)){
 					newValue["registerStar"] = "true";
 					value["messageSignature"] = "valid";
@@ -57,8 +55,7 @@ function validateSignature(message){
 function checkSessionValidity(address){
 	return new Promise((resolve, reject) => {
 		uDB.get(address, function(err, value){
-			if(err){
-				console.log("Creating user Session...");
+			if(err){;
 				let user = new User(address);
 				uDB.put(address, JSON.stringify(user).toString());
 				console.log(JSON.stringify(user));
@@ -68,10 +65,8 @@ function checkSessionValidity(address){
 				let actualTimeStamp = session.requestTimeStamp;
 				session.validationWindow = sessionValidity - (new Date().getTime().toString().slice(0,-3) - actualTimeStamp);
 				if(session.validationWindow <= 0){
-					console.log('valdation window over, register again...');
 					endSession(session.address);
 					resolve(false);
-					// reject('valdation window over, register again...');
 				}else{
 					uDB.put(session.address, JSON.stringify(session).toString());
 					resolve(session);

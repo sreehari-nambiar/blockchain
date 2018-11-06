@@ -1,53 +1,49 @@
 'use strict';
 
-const SimpleChain = require('../simpleChain.js');
-const userSession = require('../userSession.js');
-let bc = new SimpleChain.Blockchain();
+const Boom = require("boom")
+const SimpleChain = require('../simpleChain.js')
+const userSession = require('../userSession.js')
+let bc = new SimpleChain.Blockchain()
 
 
-exports.find = function(request, reply){
+exports.find = function(request, h){
 
-	return bc.getBlock(request.params.block_ht).
-	then((value) => {
-		return JSON.parse(value);
+	return bc.getBlock(request.params.block_ht)
+	.then((value) => {
+		let newValue = JSON.parse(value);
+		newValue.body.star['storyDecoded'] = new Buffer(newValue.body.star.story, 'hex').toString();
+		return newValue;
 	})
-
 	.catch((reason) => {
-		return `Block ${request.params.block_ht} not found`;
+		throw Boom.notFound(`Blocks ${request.params.block_ht} not found`)
 	});
 
 }
 
-exports.add1 = function(request, h){
-	request.payload.star.story =  encodeStory(request.payload.star.story);
-	return request.payload;
-}
+
 
 exports.add = function(request, h){
+
 	if (request.payload['address'].trim().length != 34){
-		return 'Enter valid address';
+		throw Boom.badRequest('Enter valid wallet address')
 	} else if (isEmpty(request.payload['star'])){
-		return 'Enter valid information about star';
+		throw Boom.badRequest('Enter valid information about star')
 	} else if (request.payload['star']['ra'].trim().length == 0 ){
-		return 'Enter Right Ascension';
+		throw Boom.badRequest('Right Ascension is required')
 	} else if (request.payload['star']['dec'].trim().length == 0 ){
-		return 'Enter Declination';
+		throw Boom.badRequest('Declination is required')
 	} else if (request.payload['star']['story'].length == 0 ){
-		return 'Enter your star story';
+		throw Boom.badRequest('star story is required')
 	} else if (request.payload['star']['story'].length > 250){
-		return 'Star story too long, only 250 characters allowed';
+		throw Boom.entityTooLarge('Star story too long, only 250 characters allowed')
 	} else {
 		//new changes
 		let session = userSession.checkSession(request.payload['address']);
-		console.log("checking session.....");
 		return session.then((value) => {
-			console.log(value);
 			if(!(value === false)){
 				if(value.messageSignature === "valid"){
-					console.log(`registerStar:  ${value.registerStar}`);
-					request.payload.star.story =  encodeStory(request.payload.star.story);
 					if(new Buffer(request.payload.star.story).length > 500){
-						return "Story too large to be stored in a Block, must be less than 500 bytes";
+						throw Boom.entityTooLarge("Story too large to be stored in a Block, must be less than 500 bytes")
 					}
 					if(!(request.payload.star.story == false)){
 						return bc.addBlock(new SimpleChain.Block(request.payload))
@@ -55,18 +51,14 @@ exports.add = function(request, h){
 							userSession.endSession(request.payload['address']);
 							return JSON.parse(value);
 						}) 
-						// .catch((reason) => {
-						// 	return reason;
-						// })
 					} else{
-						return "invalid star story";
+						throw Boom.badRequest("Story must contain ASCII charatcers only");
 					}
 				} else{
-					return "address not valid, please sign and validate";
+					throw Boom.preconditionFailed("address not valid, please sign and validate")
 				}
 			} else {
-				console.log("invalid session...");
-				return 'Sesion expired, login again to register your star';
+				throw Boom.unauthorized("Sesion expired, login again to register your star")
 			}
 		});
 		//end of new changes
@@ -77,17 +69,22 @@ exports.add = function(request, h){
 exports.getByAddress = function(request, h) {
 	return bc.getBlocks(request.params)
 		.then((value) => {
-			console.log(request.params["address"]);
-			return value
-					.filter(block => block.body.address==request.params["address"]);
+			console.log(typeof(value))
+			let block_by_address = value.filter(block => block.body.address ===request.params["address"]);
+			console.log(typeof(block_by_address))
+			block_by_address.forEach((block)=>{
+				block.body.star['storyDecoded'] = new Buffer(block.body.star.story, 'hex').toString();
+			})
+			return block_by_address;
 		});
 }
 
 exports.getByHash = function(request, h) {
 	return bc.getBlocks()
 		.then((value) => {
-			return value.filter(block => block.hash ===request.params["hash"])[0];
-			//return value[0];
+			let block_by_hash = value.filter(block => block.hash ===request.params["hash"])[0];
+			block_by_hash.body.star['storyDecoded'] = new Buffer(block_by_hash.body.star.story, 'hex').toString();
+			return block_by_hash;
 		});
 }
 
@@ -101,19 +98,9 @@ function isEmpty(obj) {
 
 function encodeStory(input) {
   if(/^[\x00-\x7F]*$/.test(input)){
-  	return new Buffer(JSON.stringify(input)).toString('hex');
+  	return new Buffer(input).toString('hex');
   } else {
   	return false;
   }
 }
 
-exports.getBlocks1 = function(request, reply){
-
-	let story =  encodeStory(request.payload.star.story);
-	if(new Buffer(story).length > 500){
-		return "too large";
-	} else { 
-		return new Buffer(story).length ;
-	}
-
-}

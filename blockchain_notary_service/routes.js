@@ -21,11 +21,6 @@ module.exports = [
 },
 {
 	method: 'POST',
-	path: '/blocktest',
-	handler: Blocks.getBlocks1
-},
-{
-	method: 'POST',
 	path: '/block',
 	handler: Blocks.add
 },
@@ -39,10 +34,4 @@ module.exports = [
 	path: '/message-signature/validate',
 	handler: UserRequests.validateSignature
 },
-{
-	method: 'POST',
-	path: '/block1',
-	handler: Blocks.add1
-}
-
 ];
