@@ -25,35 +25,39 @@ exports.find = function(request, h){
 exports.add = function(request, h){
 
 	if (request.payload['address'].trim().length != 34){
-		throw Boom.badRequest('Enter valid wallet address')
+		throw Boom.badData('Enter valid wallet address')
 	} else if (isEmpty(request.payload['star'])){
-		throw Boom.badRequest('Enter valid information about star')
+		throw Boom.badData('Enter valid information about star')
 	} else if (request.payload['star']['ra'].trim().length == 0 ){
-		throw Boom.badRequest('Right Ascension is required')
+		throw Boom.badData('Right Ascension is required')
 	} else if (request.payload['star']['dec'].trim().length == 0 ){
-		throw Boom.badRequest('Declination is required')
+		throw Boom.badData('Declination is required')
 	} else if (request.payload['star']['story'].length == 0 ){
-		throw Boom.badRequest('star story is required')
+		throw Boom.badData('star story is required')
 	} else if (request.payload['star']['story'].length > 250){
 		throw Boom.entityTooLarge('Star story too long, only 250 characters allowed')
-	} else {
+	} else if (!(encodeStory(request.payload['star']['story']))){
+		throw Boom.badData('Only ASCII Charatcers supported in story')
+	}
+	else {
 		//new changes
 		let session = userSession.checkSession(request.payload['address']);
 		return session.then((value) => {
 			if(!(value === false)){
 				if(value.messageSignature === "valid"){
-					if(new Buffer(request.payload.star.story).length > 500){
+					let story =  Buffer.from(request.payload.star.story, 'ascii');
+					// encodeStory(request.payload.star.story);
+					if(story.length > 500){
 						throw Boom.entityTooLarge("Story too large to be stored in a Block, must be less than 500 bytes")
-					}
-					if(!(request.payload.star.story == false)){
+					}else{
+						request.payload.star.story = story.toString('hex');
+					// if(!(request.payload.star.story == false)){
 						return bc.addBlock(new SimpleChain.Block(request.payload))
 						.then((value) => {
 							userSession.endSession(request.payload['address']);
 							return JSON.parse(value);
 						}) 
-					} else{
-						throw Boom.badRequest("Story must contain ASCII charatcers only");
-					}
+					} 
 				} else{
 					throw Boom.preconditionFailed("address not valid, please sign and validate")
 				}
@@ -98,7 +102,8 @@ function isEmpty(obj) {
 
 function encodeStory(input) {
   if(/^[\x00-\x7F]*$/.test(input)){
-  	return new Buffer(input).toString('hex');
+  	// return new Buffer(input).toString('hex');
+  	return true;
   } else {
   	return false;
   }

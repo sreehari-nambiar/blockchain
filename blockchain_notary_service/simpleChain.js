@@ -150,7 +150,7 @@ class Blockchain{
 	getBlocksByParam(request){
 		return new Promise((resolve, reject) =>{
 			let param = Object.keys(request)[0];
-			console.log(param);
+			// console.log(param);
 			let output = [];
 			db.createReadStream()
 				.on('data', function(data){

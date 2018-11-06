@@ -27,7 +27,6 @@ function createSession(address){
 
 function validateSignature(message){
 	return new Promise((resolve, reject) => {
-		console.log(message);
 		resolve(checkSessionValidity(message.address)
 		.then((value) => {
 			let newValue = {};
@@ -41,7 +40,6 @@ function validateSignature(message){
 					value["messageSignature"] = "invalid";
 				}
 				newValue["status"] = value;
-				console.log(newValue);
 				uDB.put(message.address, JSON.stringify(value).toString());
 				return newValue;
 			} else{
@@ -58,7 +56,6 @@ function checkSessionValidity(address){
 			if(err){;
 				let user = new User(address);
 				uDB.put(address, JSON.stringify(user).toString());
-				console.log(JSON.stringify(user));
 				resolve(user);	
 			}else{
 				let session = JSON.parse(value);
