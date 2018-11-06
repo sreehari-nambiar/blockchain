@@ -17,25 +17,27 @@ The application allows users to request ownership of a star and validate their r
 
 ## APIs
 
-###- Request Validation
+###- Request Validation  
 Allows users to submit their request using their wallet address. The API acceptd a blockchain ID (wallet address). User will receive a response in JSON format with a message to sign.This will create a session for a wallet ID, the session remains valid for 5 minutes. Users are expected to sign the message property of the JSON response.  
 
 * **Endpoint:**
 
     *http://localhost:8000/requestValidation*  
 
-    **Request Payload:** 
+* **Request Payload:**   
+
     The body is JSON object with the below properties  
     * **address:** Wallet address of the user (required)
 
-    **Response Paylod:**
+* **Response Paylod:**  
+
     The response is a JSON object with the below properties
     * **address:**  Wallet address of the requestor
     * **requestTimeStamp:** Time the request was submitted
     * **message:** Message to by signed and verified by the user
     * **validationWindow:** Time remaining to complete the validation and star registration 
 
-* **Example using CURL**
+* **Example using CURL**  
     
     **Request:**
 
@@ -53,7 +55,10 @@ Allows users to submit their request using their wallet address. The API acceptd
         }
 
 
-###- Validate Signature
+
+
+###- Validate Signature  
+
 
 Use this API to validate user signature after session is established. Once the signature is validated, user will be granted access to register their favorite star.
 
@@ -61,12 +66,14 @@ Use this API to validate user signature after session is established. Once the s
     
     *http://localhost:8000/message-signature/validate*
 
-    **Request Payload:** 
+* **Request Payload:**   
+
     The request is a JSON object with the following properties
     * **address:** Wallet address of the requester (required)
     * **signature:** Public key for the sent wallet address (required)
 
-    **Response Payload:**
+* **Response Payload:**  
+
     The response is a JSON object with the below properties
     * **registerStar:**  Flag that suggest if the user is granted access to register a star.
     * **status:** JSON object with the user information such as address, requested timestamp, message signed by the used and encoded, time remaining for registration and a flag which suggests if the signature is valid
@@ -79,7 +86,20 @@ Use this API to validate user signature after session is established. Once the s
              -H "Content-Type:application/json"^  
              -d "{\"address\" : \"189DuKEEZTb5QiHov1zdFPTXX66PbJrKCx\", \"signature\" : \"H4fJeb5bRrUm+Lxrs8K79gbfs2r3iUZl+u24bqdINl04QtrqoMlRFF6ZpJ895PmuCOQVIJSgBcz25uD5lMaTTkA=\"}"
 
-    Response:
+    Response:  
+
+
+        {
+            "registerStar": "true",
+            "status": {
+                "address": "189DuKEEZTb5QiHov1zdFPTXX66PbJrKCx",
+                "requestTimeStamp": "1541480152",
+                "message": "189DuKEEZTb5QiHov1zdFPTXX66PbJrKCx:1541480152:starRegistry",
+                "validationWindow": 212,
+                "messageSignature": "valid"
+            }
+        }  
+
 
 ###- Star Registration
 Use this API to register a star. Use will provide the coordinates of the star and a short story. Story must contain ASCII charaters only and should be less than 500 bytes. 
@@ -88,7 +108,9 @@ Use this API to register a star. Use will provide the coordinates of the star an
 
  _http://localhost:8000/block_
 
-    **Request Payload:** 
+
+* **Request Payload:**   
+
     The request is a JSON object with the following properties
     * **address:** Wallet address of the requester (required)
     * **star:** JSON object that contains information about the star (required)
@@ -98,7 +120,8 @@ Use this API to register a star. Use will provide the coordinates of the star an
         - **mag** magnitude (optional)
         - **story** brief story containing ASCII charaters limited to 250 words
 
-    **Response Payload:**
+* **Response Payload:**  
+
 
     The response is a JSON object giving information of the block stored on blockchain
     * **hash:**  Block Hash.
@@ -131,16 +154,20 @@ Use this API to register a star. Use will provide the coordinates of the star an
                 "previousBlockHash":  "84aeba9d4c0fe5a9f6e8a742bda9ee5664371062e0c18588a95e5d231563da86"  
             }  
 
-###- Search by Blockchain Wallet Address
+
+###- Search by Blockchain Wallet Address  
+
 
 Look for stars registered by a specific user using their wallet address 
 
 * **Endpoint:**    
 
-    *http://localhost:8000/stars/address:[ADDRESS]*     
+    *http://localhost:8000/stars/address:[ADDRESS]*   
+
 * **Request Parameter:**   
 
-    URL contains mandatory parameter [ADDRESS] 
+    URL contains mandatory parameter [ADDRESS]   
+
 * **Response Payload:**   
 
     Response is a JSON object with all the stars registered by the address.    
@@ -183,7 +210,9 @@ Look for stars registered by a specific user using their wallet address
                 }
             ]    
 
-###- Search by Star Block Hash
+
+###- Search by Star Block Hash  
+
 Look for stars using a block hash.  
 
 * **Endpoint:**     
@@ -217,7 +246,9 @@ Look for stars using a block hash.
                 "previousBlockHash": "84aeba9d4c0fe5a9f6e8a742bda9ee5664371062e0c18588a95e5d231563da86"
             }  
 
-###- Search by Star Block Height
+
+###- Search by Star Block Height  
+
 Look up stars using block height.
 
 * **Endpoint:**      
@@ -251,4 +282,5 @@ Look up stars using block height.
                 },
                 "time": "1541475983",
                 "previousBlockHash": "84aeba9d4c0fe5a9f6e8a742bda9ee5664371062e0c18588a95e5d231563da86"
-            }  
+            }    
+
