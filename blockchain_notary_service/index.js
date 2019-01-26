@@ -5,7 +5,7 @@ const Hapi = require('hapi');
 
 //create a server running on port 8000
 
-const server = Hapi.server({port: 8000});
+const server = Hapi.server({ port: 8000 });
 
 
 // Routes
@@ -16,8 +16,7 @@ async function start() {
 
     try {
         await server.start();
-    }
-    catch (err) {
+    } catch (err) {
         console.log(err);
         process.exit(1);
     }
@@ -26,4 +25,3 @@ async function start() {
 };
 
 start();
-
